@@ -34,7 +34,7 @@ const authorLogin = async (req, res) => {
             const token = jwt.sign({
                 authorId: author._id,
             }, SECRETE_KEY)
-            res.setHeaders('x-api-key', token)
+            res.setHeader("x-api-key", token)
             res.status(200).send({ status: true, data: { token: token } })
         }
     } catch (error) {
