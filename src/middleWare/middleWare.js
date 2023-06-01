@@ -31,7 +31,7 @@ const authorHandel = async (req, res, next) => {
 
 const blogHandel = async (req, res, next) => {
     try {
-        const blogId = req.body.blogId
+        const blogId = req.params.blogId
         const blog = await blogModel.findById(blogId)
         if (!blog || blog === null) {
             return res.status(404).send({ status: false, message: 'not found blog' })
