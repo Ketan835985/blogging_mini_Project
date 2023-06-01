@@ -13,10 +13,9 @@ const createBlog = async (req, res) => {
         if (req.body.isPublished == true) {
             req.body.publishedAt = new Date()
         }
-        else {
-            const blog = await blogModel.create(req.body)
-            res.status(201).send({ status: true, data: blog })
-        }
+        const blog = await blogModel.create(req.body)
+        res.status(201).send({ status: true, data: blog })
+
     } catch (error) {
         res.status(500).send({ status: false, message: error.message })
     }
@@ -38,13 +37,23 @@ const updateBlog = async (req, res) => {
         const blogId = req.params.blogId
         const authorId = req.authorId
         if (!validObjectId(blogId)) return res.status(400).send({ status: false, message: 'Invalid blogId' })
-        if (blogCheck(blogId)== false) return res.status(404).send({ status: false, message: 'blog Not found' })
+        if (blogCheck(blogId) == false) return res.status(404).send({ status: false, message: 'blog Not found' })
         const blog = await blogModel.findById(blogId)
         if (blog.authorId != authorId) return res.status(403).send({ status: false, message: 'Unauthorized' })
         if (req.body.isPublished == true) {
             req.body.publishedAt = new Date()
         }
-        const updatedBlog = await blogModel.findOneAndUpdate({ _id: blogId, isDeleted: false }, req.body, { new: true })
+        const updatedBlog = await blogModel.findOneAndUpdate({ _id: blogId, isDeleted: false },{
+            $set: {
+                title: req.body.title,
+                body: req.body.body,
+                isPublished: req.body.isPublished,
+                publishedAt: req.body.publishedAt
+            },
+        $addToSet: {
+            tags:req.body.tags,
+            subcategory:req.body.subcategory
+        }}, { new: true })
         if (!updatedBlog || updatedBlog == null) return res.status(404).send({ status: false, message: 'blog Not found' })
         res.status(200).send({ status: true, message: 'Blog updated', data: updatedBlog })
 
@@ -53,18 +62,18 @@ const updateBlog = async (req, res) => {
     }
 }
 
-const deleteBlogById= async (req, res) =>{
+const deleteBlogById = async (req, res) => {
     try {
         const blogId = req.params.blogId
         const authorId = req.authorId
         if (!validObjectId(blogId)) return res.status(400).send({ status: false, message: 'Invalid blogId' })
         if (!blogCheck(blogId)) return res.status(404).send({ status: false, message: 'blog Not found' })
         const blog = await blogModel.findById(blogId)
-        if (blog.authorId != authorId) return res.status(403).send({ status: false, message: 'Unauthorized' })
-        if(blog.isDeleted == true) return res.status(404).send({ status: false, message: 'blog already deleted' })
+        if (blog == null) return res.status(404).send({ status: false, message: 'blog Not found' })
+        if (blog[authorId] != req[authorId]) return res.status(403).send({ status: false, message: 'Unauthorized' })
         const deletedBlog = await blogModel.findOneAndUpdate({ _id: blogId, isDeleted: false }, { isDeleted: true, deletedAt: new Date() }, { new: true })
         if (!deletedBlog || deletedBlog == null) return res.status(404).send({ status: false, message: 'blog Not found' })
-        res.status(200).send({ status: true, message: 'Blog successfully deleted'})
+        res.status(200).send({ status: true})
 
     } catch (error) {
         res.status(500).send({ status: false, message: error.message })
@@ -72,16 +81,16 @@ const deleteBlogById= async (req, res) =>{
 }
 
 
-const deleteBlogByQuery = async(req, res) =>{
+const deleteBlogByQuery = async (req, res) => {
     try {
         const data = req.query
         const authorId = req.authorId
-        const blogs = await blogModel.updateMany({...data, isDeleted: false, authorId : authorId},{isDeleted: true, deletedAt: new Date()}, {new: true})
-        if( blogs.modifiedCount == 0 ) return res.status(404).send({ status: false, message: 'blog Not found' })
-        res.status(200).send({ status: true, message: 'Blog successfully deleted'})
+        const blogs = await blogModel.updateMany({ ...data, isDeleted: false, authorId: authorId }, { isDeleted: true, deletedAt: new Date() }, { new: true })
+        if (blogs.modifiedCount == 0) return res.status(404).send({ status: false, message: 'blog Not found' })
+        res.status(200).send({ status: true })
     } catch (error) {
         res.status(500).send({ status: false, message: error.message })
     }
 }
 
-module.exports = { createBlog, getBlog, updateBlog, deleteBlogById , deleteBlogByQuery}
+module.exports = { createBlog, getBlog, updateBlog, deleteBlogById, deleteBlogByQuery }
