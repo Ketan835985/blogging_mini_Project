@@ -38,7 +38,7 @@ const updateBlog = async (req, res) => {
         const blogId = req.params.blogId
         const authorId = req.authorId
         if (!validObjectId(blogId)) return res.status(400).send({ status: false, message: 'Invalid blogId' })
-        if (!blogCheck(blogId)) return res.status(404).send({ status: false, message: 'blog Not found' })
+        if (blogCheck(blogId)== false) return res.status(404).send({ status: false, message: 'blog Not found' })
         const blog = await blogModel.findById(blogId)
         if (blog.authorId != authorId) return res.status(403).send({ status: false, message: 'Unauthorized' })
         if (req.body.isPublished == true) {

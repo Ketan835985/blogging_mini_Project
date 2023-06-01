@@ -26,7 +26,7 @@ const authorLogin = async (req,res) => {
         if(!email || !password) return res.status(400).send({ status: false , message: 'Please provide email and password' })
         if(! validator.isEmail(email)) res.status(400).send({ status: false, message: `${email} is not valid` })
         const author = await authorModel.findOne({ email: email , password: password})
-        if(!author) return res.status(400).send({ status: false, message: 'Invalid email or password' })
+        if(!author) return res.status(401).send({ status: false, message: 'Invalid email or password' })
         else{
             const token = jwt.sign({
                 authorId: author._id,
