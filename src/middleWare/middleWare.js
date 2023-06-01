@@ -1,5 +1,7 @@
 const jwt = require('jsonwebtoken');
 const { SECRETE_KEY } = require('../../config')
+const authorModel = require('../models/authorModel')
+const blogModel = require('../models/blogModel')
 
 
 
