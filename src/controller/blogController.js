@@ -39,7 +39,6 @@ const updateBlog = async (req, res) => {
         if (!validObjectId(blogId)) return res.status(400).send({ status: false, message: 'Invalid blogId' })
         if (blogCheck(blogId) == false) return res.status(404).send({ status: false, message: 'blog Not found' })
         const blog = await blogModel.findById(blogId)
-        if (blog.authorId != authorId) return res.status(403).send({ status: false, message: 'Unauthorized' })
         if (req.body.isPublished == true) {
             req.body.publishedAt = new Date()
         }
@@ -70,7 +69,6 @@ const deleteBlogById = async (req, res) => {
         if (!blogCheck(blogId)) return res.status(404).send({ status: false, message: 'blog Not found' })
         const blog = await blogModel.findById(blogId)
         if (blog == null) return res.status(404).send({ status: false, message: 'blog Not found' })
-        if (blog[authorId] != req[authorId]) return res.status(403).send({ status: false, message: 'Unauthorized' })
         const deletedBlog = await blogModel.findOneAndUpdate({ _id: blogId, isDeleted: false }, { isDeleted: true, deletedAt: new Date() }, { new: true })
         if (!deletedBlog || deletedBlog == null) return res.status(404).send({ status: false, message: 'blog Not found' })
         res.status(200).send({ status: true})

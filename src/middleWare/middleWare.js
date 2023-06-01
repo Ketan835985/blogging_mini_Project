@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const { SECRETE_KEY } = require('../../config')
 const authorModel = require('../models/authorModel')
 const blogModel = require('../models/blogModel')
+const ObjectId = require('mongoose').Schema.Types.ObjectId
 
 
 
@@ -20,11 +21,20 @@ const authenticationFun = async (req, res, next) => {
 const authorHandel = async (req, res, next) => {
     try {
         const authorId = req.body.authorId
-        const author = await authorModel.findById(authorId)
-        if (!author || author === null) {
-            return res.status(404).send({ status: false, message: 'not found author' })
+        if (!authorId) {
+            return res.status(400).send({ status: false, message: "Author id is missing" })
         } else {
-            next()
+            if (!ObjectId.isValid(authorId)) {
+                return res.status(400).send({ status: false, message: ' blog id is not valid' })
+            }
+            else {
+                const author = await authorModel.findById(authorId)
+                if (!author || author === null) {
+                    return res.status(404).send({ status: false, message: 'not found author' })
+                } else {
+                    next()
+                }
+            }
         }
     } catch (error) {
         res.status(404).send({ status: false, message: error.message })
@@ -34,11 +44,18 @@ const authorHandel = async (req, res, next) => {
 const blogHandel = async (req, res, next) => {
     try {
         const blogId = req.params.blogId
+        const authorId = req.authorId
+        if (!ObjectId.isValid(blogId)) return res.status(400).send({ status: false, message: ' blog id is not valid' })
         const blog = await blogModel.findById(blogId)
         if (!blog || blog === null) {
             return res.status(404).send({ status: false, message: 'not found blog' })
         } else {
-            next()
+            if (blog.authorId != authorId) {
+                return res.status(403).send({ status: false, message: 'Unauthorized' })
+            }
+            else {
+                next()
+            }
         }
     } catch (error) {
         res.status(404).send({ status: false, message: error.message })
@@ -46,4 +63,4 @@ const blogHandel = async (req, res, next) => {
 }
 
 
-module.exports = {authenticationFun, authorHandel,blogHandel}
+module.exports = { authenticationFun, authorHandel, blogHandel }
