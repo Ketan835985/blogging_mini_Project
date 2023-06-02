@@ -51,15 +51,11 @@ const blogHandel = async (req, res, next) => {
         if (!token) return res.status(401).send({ status: false, message: 'Please provide token' })
         if (!mongoose.Types.ObjectId.isValid(blogId)) return res.status(400).send({ status: false, message: ' blog id is not valid' })
         const blog = await blogModel.findById(blogId)
-        if (!blog || blog === null) {
-            return res.status(404).send({ status: false, message: 'not found blog' })
+        if (!blog || blog == null) {
+            res.status(404).send({ status: false, message: 'not found blog' })
         } else {
-            if (blog.authorId != authorId) {
-                return res.status(403).send({ status: false, message: 'Unauthorized' })
-            }
-            else {
-                next()
-            }
+            req.blogId = blogId
+            next()
         }
     } catch (error) {
         res.status(404).send({ status: false, message: error.message })

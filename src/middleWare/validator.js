@@ -24,4 +24,23 @@ const blogCheck = async(blogId) => {
     return true
 }
 
-module.exports ={titleCheck ,authorCheck ,validObjectId, blogCheck}
+
+const authorization = async(req,res,next) => {
+    try {
+        const blogId = req.blogId
+        const authorId = req.authorId
+        const blog = await blogModel.findById(blogId)
+        const author = blog.authorId
+        if(author == authorId) {
+            next()
+        }
+        else {
+            res.status(403).send({ status: false, message: 'Unauthorized' })
+        }
+
+    } catch (error) {
+        res.status(404).send({ status: false, message: error.message })
+    }
+}
+
+module.exports ={titleCheck ,authorCheck ,validObjectId, blogCheck, authorization}

@@ -36,23 +36,21 @@ const updateBlog = async (req, res) => {
     try {
         const blogId = req.params.blogId
         const authorId = req.authorId
-        if (!validObjectId(blogId)) return res.status(400).send({ status: false, message: 'Invalid blogId' })
-        if (blogCheck(blogId) == false) return res.status(404).send({ status: false, message: 'blog Not found' })
-        const blog = await blogModel.findById(blogId)
         if (req.body.isPublished == true) {
             req.body.publishedAt = new Date()
         }
-        const updatedBlog = await blogModel.findOneAndUpdate({ _id: blogId, isDeleted: false },{
+        const updatedBlog = await blogModel.findOneAndUpdate({ _id: blogId, isDeleted: false, authorId : authorId }, {
             $set: {
                 title: req.body.title,
                 body: req.body.body,
                 isPublished: req.body.isPublished,
                 publishedAt: req.body.publishedAt
             },
-        $addToSet: {
-            tags:req.body.tags,
-            subcategory:req.body.subcategory
-        }}, { new: true })
+            $addToSet: {
+                tags: req.body.tags,
+                subcategory: req.body.subcategory
+            }
+        }, { new: true })
         if (!updatedBlog || updatedBlog == null) return res.status(404).send({ status: false, message: 'blog Not found' })
         res.status(200).send({ status: true, message: 'Blog updated', data: updatedBlog })
 
@@ -65,13 +63,11 @@ const deleteBlogById = async (req, res) => {
     try {
         const blogId = req.params.blogId
         const authorId = req.authorId
-        if (!validObjectId(blogId)) return res.status(400).send({ status: false, message: 'Invalid blogId' })
-        if (!blogCheck(blogId)) return res.status(404).send({ status: false, message: 'blog Not found' })
-        const blog = await blogModel.findById(blogId)
+        const blog = await blogModel.findOne({ _id: blogId, isDeleted: false })
         if (blog == null) return res.status(404).send({ status: false, message: 'blog Not found' })
-        const deletedBlog = await blogModel.findOneAndUpdate({ _id: blogId, isDeleted: false }, { isDeleted: true, deletedAt: new Date() }, { new: true })
+        const deletedBlog = await blogModel.findOneAndUpdate({ _id: blogId, isDeleted: false, authorId: authorId }, { isDeleted: true, deletedAt: new Date() }, { new: true })
         if (!deletedBlog || deletedBlog == null) return res.status(404).send({ status: false, message: 'blog Not found' })
-        res.status(200).send({ status: true})
+        res.status(200).send({ status: true })
 
     } catch (error) {
         res.status(500).send({ status: false, message: error.message })
@@ -84,8 +80,11 @@ const deleteBlogByQuery = async (req, res) => {
         const data = req.query
         const authorId = req.authorId
         const blogs = await blogModel.updateMany({ ...data, isDeleted: false, authorId: authorId }, { isDeleted: true, deletedAt: new Date() }, { new: true })
-        if (blogs.modifiedCount == 0) return res.status(404).send({ status: false, message: 'blog Not found' })
-        res.status(200).send({ status: true })
+        if (blogs.modifiedCount == 0) {
+            res.status(404).send({ status: false, message: 'blog Not found' })
+        } else {
+            res.status(200).send({ status: true })
+        }
     } catch (error) {
         res.status(500).send({ status: false, message: error.message })
     }
