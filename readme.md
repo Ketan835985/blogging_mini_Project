@@ -1,242 +1,215 @@
-# Project1
-# Technetium
+# Project1 - Blogging_miniSite
 
-Repository for backend cohort - Technetium
+A blogging site is an online platform that allows individuals or organizations to create and publish their own content in the form of blog posts. It serves as a medium for sharing information, knowledge, opinions, and experiences with a wide audience.
 
-## Blogging Site Mini Project Requirement
+Blogging sites have gained immense popularity due to their ease of use, accessibility, and the ability to reach a global audience. They provide a platform for writers, professionals, enthusiasts, and experts to showcase their expertise, share their ideas, and engage with readers through interactive discussions.
 
-## Phase I
+## Blogging MiniSite  Project Requirement
 
-### Models
-- Author Model
-```
-{ fname: { mandatory}, lname: {mandatory}, title: {mandatory, enum[Mr, Mrs, Miss]}, email: {mandatory, valid email, unique}, password: {mandatory} }
-```
-- Blogs Model
-```
-{ title: {mandatory}, body: {mandatory}, authorId: {mandatory, refs to author model}, tags: {array of string}, category: {string, mandatory}, subcategory: {array of string, examples[technology-[web development, mobile development, AI, ML etc]] }, createdAt, updatedAt, deletedAt: {when the document is deleted}, isDeleted: {boolean, default: false}, publishedAt: {when the blog is published}, isPublished: {boolean, default: false}}
-```
+This project aims to develop a Blogging Site with the following functionalities.
 
-### Author APIs /authors
-- Create an author - atleast 5 authors
-- Create a author document from request body.
-  `Endpoint: BASE_URL/authors`
+### Phase I
 
-### POST /blogs
-- Create a blog document from request body. Get authorId in request body only.
-- Make sure the authorId is a valid authorId by checking the author exist in the authors collection.
-- Return HTTP status 201 on a succesful blog creation. Also return the blog document. The response should be a JSON object like [this](#Blogs) 
-- Create atleast 5 blogs for each author
+#### Models
+- Author Model:
+  - `fname` (mandatory)
+  - `lname` (mandatory)
+  - `title` (mandatory, enum[Mr, Mrs, Miss])
+  - `email` (mandatory, valid email, unique)
+  - `password` (mandatory)
 
-- Return HTTP status 400 for an invalid request with a response body like [this](#error-response-structure)
+- Blogs Model:
+  - `title` (mandatory)
+  - `body` (mandatory)
+  - `authorId` (mandatory, references author model)
+  - `tags` (array of strings)
+  - `category` (string, mandatory)
+  - `subcategory` (array of strings, examples[technology-[web development, mobile development, AI, ML etc]])
+  - `createdAt`
+  - `updatedAt`
+  - `deletedAt` (when the document is deleted)
+  - `isDeleted` (boolean, default: false)
+  - `publishedAt` (when the blog is published)
+  - `isPublished` (boolean, default: false)
 
-### GET /blogs
-- Returns all blogs in the collection that aren't deleted and are published
-- Return the HTTP status 200 if any documents are found. The response structure should be like [this](#Get-Blogs-Response-Structure) 
-- If no documents are found then return an HTTP status 404 with a response like [this](#error-response-structure) 
-- Filter blogs list by applying filters. Query param can have any combination of below filters.
+#### Author APIs
+
+- **POST /authors**
+
+  Create an author document from the request body.
+
+  Endpoint: `BASE_URL/authors`
+
+  Example Request Body:
+  ```json
+  {
+    "fname": "John",
+    "lname": "Doe",
+    "title": "Mr",
+    "email": "john.doe@example.com",
+    "password": "password123"
+  }
+  ```
+
+- **POST /blogs**
+
+  Create a blog document from the request body. Include `authorId` in the request body.
+
+  Make sure the `authorId` is a valid `authorId` by checking if the author exists in the authors collection.
+
+  Return HTTP status 201 on successful blog creation. Also, return the blog document. The response should be a JSON object.
+
+  Example Request Body:
+  ```json
+  {
+    "title": "Sample Blog",
+    "body": "This is a sample blog",
+    "authorId": "author123",
+    "tags": ["sample", "blog"],
+    "category": "Sample Category",
+    "subcategory": ["Sample Subcategory"]
+  }
+  ```
+
+- **GET /blogs**
+
+  Return all blogs in the collection that are not deleted and are published.
+
+  Return HTTP status 200 if any documents are found. The response structure should be an array of blogs.
+
+  If no documents are found, then return an HTTP status 404 with an appropriate error message.
+
+  Apply filters to the blogs list by using query parameters. The query parameters can have any combination of the below filters:
   - By author Id
   - By category
   - List of blogs that have a specific tag
   - List of blogs that have a specific subcategory
-example of a query url: blogs?filtername=filtervalue&f2=fv2
 
-### PUT /blogs/:blogId
-- Updates a blog by changing the its title, body, adding tags, adding a subcategory. (Assuming tag and subcategory received in body is need to be added)
-- Updates a blog by changing its publish status i.e. adds publishedAt date and set published to true
-- Check if the blogId exists (must have isDeleted false). If it doesn't, return an HTTP status 404 with a response body like [this](#error-response-structure)
-- Return an HTTP status 200 if updated successfully with a body like [this](#Updated-Blog-Response-Structure) 
-- Also make sure in the response you return the updated blog document. 
+  Example Query URL: `BASE_URL/blogs?filtername=filtervalue&f2=fv2`
 
-### DELETE /blogs/:blogId
-- Check if the blogId exists( and is not deleted). If it does, mark it deleted and return an HTTP status 200 without any response body.
-- If the blog document doesn't exist then return an HTTP status of 404 with a body like [this](#error-response-structure) 
+- **PUT /blogs/:blogId**
 
-### DELETE /blogs?queryParams
-- Delete blog documents by category, authorid, tag name, subcategory name, unpublished
-- If the blog document doesn't exist then return an HTTP status of 404 with a body like [this](#error-response-structure)
+  Update a blog by changing its title, body, adding tags, and adding a subcategory. (Assuming the tag and subcategory received in the body need to be added)
 
-## Phase II
+  Update a blog by changing its publish status, i.e., add `publishedAt` date and set `isPublished` to true.
 
-- Add authentication and authroisation feature
+  Check if the `blogId` exists (must have `isDeleted` false). If it doesn't, return an HTTP status 404 with an appropriate error message.
 
-### POST /login
-- Allow an author to login with their email and password. On a successful login attempt return a JWT token contatining the authorId in response body like [this](#Successful-login-Response-structure)
-- If the credentials are incorrect return a suitable error message with a valid HTTP status code
+  Return an HTTP status 200 if the blog is updated successfully. Also, include the updated blog document in the response.
 
-### Authentication
-- Add an authorisation implementation for the JWT token that validates the token before every protected endpoint is called. If the validation fails, return a suitable error message with a corresponding HTTP status code
-- Protected routes are create a blog, edit a blog, get the list of blogs, delete a blog(s)
-- Set the token, once validated, in the request - `x-api-key`
-- Use a middleware for authentication purpose.
+- **DELETE /blogs/:blogId**
 
-### Authorisation
+ 
+
+ Check if the `blogId` exists (and is not deleted). If it does, mark it as deleted and return an HTTP status 200 without any response body.
+
+  If the blog document doesn't exist, return an HTTP status 404 with an appropriate error message.
+
+- **DELETE /blogs?queryParams**
+
+  Delete blog documents by category, authorId, tag name, subcategory name, or unpublished.
+
+  If the blog document doesn't exist, return an HTTP status 404 with an appropriate error message.
+
+### Phase II
+
+- Add authentication and authorization features.
+
+#### Authentication
+
+- **POST /login**
+
+  Allow an author to login with their email and password. On a successful login attempt, return a JWT token containing the authorId in the response body.
+
+  If the credentials are incorrect, return a suitable error message with a valid HTTP status code.
+
+  Example Request Body:
+  ```json
+  {
+    "email": "john.doe@example.com",
+    "password": "password123"
+  }
+  ```
+
+#### Authorization
+
+- Add an authorization implementation for the JWT token that validates the token before every protected endpoint is called. If the validation fails, return a suitable error message with a corresponding HTTP status code.
+
+- Protected routes include creating a blog, editing a blog, getting the list of blogs, and deleting a blog(s).
+
+- Set the token, once validated, in the request header as `x-api-key`.
+
+- Use middleware for authentication purposes.
+
 - Make sure that only the owner of the blogs is able to edit or delete the blog.
-- In case of unauthorized access return an appropirate error message.
+
+- In case of unauthorized access, return an appropriate error message.
 
 ## Testing (Self-evaluation During Development)
-- To test these apis create a new collection in Postman named Project 1 Blogging 
-- Each api should have a new request in this collection
-- Each request in the collection should be rightly named. Eg Create author, Create blog, Get blogs etc
-- Each member of each team should have their tests in running state
 
+- To test these APIs, create a new collection in Postman named "Project 1 Blogging".
 
-Refer below sample
+- Each API should have a new request in this collection.
 
- ![A Postman collection and request sample](assets/Postman-collection-sample.png)
+- Each request in the collection should be appropriately named, such as "Create Author", "Create Blog", "Get Blogs", etc.
 
-## Response
+- Each member of each team should have their tests in a running state.
 
+Refer to the sample image below for reference:
 
-### Successful Response structure
+![A Postman collection and request sample](assets/Postman-collection-sample.png)
+
+## Response Structures
+
+### Successful Response Structure
 ```yaml
 {
-  status: true,
-  data: {
+  "status": true,
+  "data": {
 
   }
 }
 ```
-### Error Response structure
+
+### Error Response Structure
 ```yaml
 {
-  status: false,
-  message: ""
+  "status": false,
+  "message": ""
 }
 ```
 
-
-
-
-
 ## Collections
 
-### Author 
+### Author
 ```yaml
 {
-    "status": true,
-    "data": {
-        "_id": "63edd170875e5650d89ab9b8",
-        "fname": "John",
-        "lname": "Wick",
-        "title": "Mr",
-        "email": "john4614@gmail.com",
-        "password": "pass1234",
-        "createdAt": "2023-02-16T06:47:12.993Z",
-        "updatedAt": "2023-02-16T06:47:12.993Z",
-        "__v": 0
-    }
+  "status": true,
+  "data": {
+    "_id": "63edd170875e5650d89ab9b8",
+    "fname": "John",
+    "lname": "Wick",
+    "title": "Mr",
+    "email": "john4614@gmail.com",
+    "password": "pass1234",
+    "createdAt": "2023-02-16T06:47:12.993Z",
+    "updatedAt": "2023-02-16T06:47:12.993Z",
+    "__v": 0
+  }
 }
 ```
 
 ### Blogs
 ```yaml
 {
-  status: true,
-  data: {
-        "title": "How to win friends",
-        "body": "Blog body",
-        "tags": ["Book", "Friends", "Self help"],
-        "category": "Book",
-        "subcategory": ["Non fiction", "Self Help"],
-        "published": false,
-        "publishedAt": "", // if published is true publishedAt will have a date 2021-09-17T04:25:07.803Z
-        "deleted": false,
-        "deletedAt": "", // if deleted is true deletedAt will have a date 2021-09-17T04:25:07.803Z,
-        "createdAt": "2021-09-17T04:25:07.803Z",
-        "updatedAt": "2021-09-17T04:25:07.803Z",
-        }
-}
-```
-### Get Blogs Response Structure
-```yaml
-{
-    "status": true,
-    "message": "Blogs list",
-    "data": [
-        {
-            "tags": ["programming","coding"],
-            "subcategory": ["web development","mobile development"],
-            "isPublished": true,
-            "publishedAt": null,
-            "isDeleted": false,
-            "deletedAt": null,
-            "_id": "626f6af87528876cb6361cfe",
-            "title": "Extreme Developer 101",
-            "body": "Code more, learn more.",
-            "authorId": "626f6aec7528876cb6361cfa",
-            "category": "technology",
-            "createdAt": "2022-05-02T05:24:08.546Z",
-            "updatedAt": "2022-05-02T05:27:46.791Z",
-            "__v": 0
-        },
-        {
-            "tags": ["movies"],
-            "subcategory": ["aliens"],
-            "isPublished": true,
-            "publishedAt": "2022-05-02T05:49:04.679Z",
-            "isDeleted": false,
-            "deletedAt": null,
-            "_id": "626f70d07528876cb6361d2d",
-            "title": "Best sci-fi movies of the year",
-            "body": "blah blah",
-            "authorId": "626f6d127528876cb6361d09",
-            "category": "entertainment",
-            "createdAt": "2022-05-02T05:49:04.681Z",
-            "updatedAt": "2022-05-02T05:49:04.681Z",
-            "__v": 0
-        },
-}]
-
-```
-### Updated Blog Response Structure
-```yaml
-{
-    "status": true,
-    "message": "Blog updated successfully",
-    "data": {
-        "tags": [
-            "movies",
-            "story"
-        ],
-        "subcategory": [
-            "aliens",
-            "cinema"
-        ],
-        "isPublished": false,
-        "publishedAt": null,
-        "isDeleted": false,
-        "deletedAt": null,
-        "_id": "63edd36c875e5650d89ab9c1",
-        "title": "new title",
-        "body": "new body",
-        "authorId": "63edd170875e5650d89ab9b8",
-        "category": "novel",
-        "createdAt": "2023-02-16T06:55:40.352Z",
-        "updatedAt": "2023-02-16T06:55:43.976Z",
-        "__v": 0
-    }
-}
-```
-### Delete Blog Response Structure
-```yaml
-{
-  status: true,
-  message: ""
-}
-```
-
-
-### Successful Login Response structure
-```yaml
-{
-  status: true,
-  data: {
-   "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdXRob3JJZCI6IjYyZmUzYmUzMzY2ZmFkNDZjY2Q1MzI3ZiIsImlhdCI6MTY2MDgzMDA4MywiZXhwIjoxNjYwODY2MDgzfQ.mSo-TLyRlGhMNcy4ftEvvIlCHlyEqpaFZc-iBth4lfg"
-
-  }
-}
-```
-#### Refer https://jsonplaceholder.typicode.com/guide/ for some fake blogs data.
-
-#### Note: Create a group database and use the same database in connection string by replacing `groupXDatabase
+  "status": true,
+  "data": {
+    "title": "How to win friends",
+    "body": "Blog body",
+    "tags": ["Book", "Friends", "Self help"],
+    "category": "Book",
+    "subcategory": ["Non fiction", "Self Help"],
+    "published": false,
+    "publishedAt": "", // if published is true, publishedAt will have a date, e.g., 2021-09-17T04:25:07.803Z
+    "deleted": false,
+    "deletedAt": "", // if deleted is true, deletedAt will have a date, e
