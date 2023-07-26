@@ -3,9 +3,11 @@ const app = express()
 const mongoose = require('mongoose')
 const trafficPoint = require('./route/route')
 const { PORT, MONGOOSE_CONNECTION } = require('../config')
+const multer = require('multer')
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+app.use(multer().any)
 
 
 mongoose.connect(MONGOOSE_CONNECTION,
